@@ -43,7 +43,7 @@ class _HomeMainState extends State<HomeMain> {
                         : sidebarController.selectedindex.value == 2
                         ? ResourcesList()
                         : sidebarController.selectedindex.value == 3
-                        ? UserDetails()
+                        ? AdminPanelSinglePage()
                         : UserDetails()))
               ],
             ),
