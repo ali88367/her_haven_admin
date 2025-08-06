@@ -7,7 +7,7 @@ class HelpCenter {
   final String id;
   final String name;
   final String description;
-  final String address;
+  final String email;
   final String phone;
   final String category;
   final List<String> services;
@@ -17,7 +17,7 @@ class HelpCenter {
     required this.id,
     required this.name,
     required this.description,
-    required this.address,
+    required this.email,
     required this.phone,
     required this.category,
     required this.services,
@@ -29,7 +29,7 @@ class HelpCenter {
       'id': id,
       'name': name,
       'description': description,
-      'address': address,
+      'email': email,
       'phone': phone,
       'category': category,
       'services': services,
@@ -43,7 +43,7 @@ class HelpCenter {
       id: documentId,
       name: json['name'] as String? ?? 'Unnamed Center',
       description: json['description'] as String? ?? '',
-      address: json['address'] as String? ?? 'No address',
+      email: json['email'] as String? ?? '',
       phone: json['phone'] as String? ?? 'N/A',
       category: json['category'] as String? ?? 'Uncategorized',
       services: json['services'] != null ? List<String>.from(json['services'] as List<dynamic>) : [],
@@ -77,7 +77,7 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
   late TextEditingController _idController;
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _addressController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   String? _selectedCategory;
   final List<String> _availableCategories = [
@@ -86,11 +86,11 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
   String _selectedAvailability = 'any';
   final List<Map<String, String>> _availabilityOptions = [
     {'value': 'any', 'label': 'Any Time'},
-    {'value': 'now', 'label': 'Open Now'},
+    {'value': '9am-5pm', 'label': '9am-5pm'},
     {'value': '247', 'label': '24/7 Services'},
   ];
   Map<String, bool> _selectedServices = {
-    'Shelter': false, 'Counseling': false, 'Legal Aid': false, 'Food Bank': false,
+    'Shelter': false, 'Counselling': false, 'Legal Advice': false, 'Food Bank': false,
   };
   bool _isSubmittingForm = false;
   late AnimationController _animationController;
@@ -129,12 +129,12 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
       _idController.text = uuid.v4();
       _nameController.clear();
       _descriptionController.clear();
-      _addressController.clear();
+      _emailController.clear();
       _phoneController.clear();
       _selectedCategory = null;
       _selectedAvailability = 'any';
       _selectedServices = {
-        'Shelter': false, 'Counseling': false, 'Legal Aid': false, 'Food Bank': false,
+        'Shelter': false, 'Counselling': false, 'Legal Advice': false, 'Food Bank': false,
       };
       if (_formScrollController.hasClients) {
         _formScrollController.animateTo(0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -149,12 +149,12 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
       _idController.text = center.id;
       _nameController.text = center.name;
       _descriptionController.text = center.description;
-      _addressController.text = center.address;
+      _emailController.text = center.email;
       _phoneController.text = center.phone;
       _selectedCategory = center.category;
       _selectedAvailability = center.availability;
       _selectedServices = {
-        'Shelter': false, 'Counseling': false, 'Legal Aid': false, 'Food Bank': false,
+        'Shelter': false, 'Counselling': false, 'Legal Advice': false, 'Food Bank': false,
       };
       for (var service in center.services) {
         if (_selectedServices.containsKey(service)) {
@@ -177,7 +177,7 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
       id: _idController.text,
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      address: _addressController.text.trim(),
+      email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
       category: _selectedCategory!,
       services: servicesList,
@@ -291,7 +291,7 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
     _idController.dispose();
     _nameController.dispose();
     _descriptionController.dispose();
-    _addressController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     _formScrollController.dispose();
     _animationController.dispose();
@@ -299,7 +299,7 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
     super.dispose();
   }
 
-  Widget _buildFormTextField(TextEditingController controller, String label, {TextInputType keyboardType = TextInputType.text, bool isMultiLine = false, bool enabled = true}) {
+  Widget _buildFormTextField(TextEditingController controller, String label, {TextInputType keyboardType = TextInputType.text, bool isMultiLine = false, bool enabled = true, bool required = true}) {
     final width = MediaQuery.of(context).size.width;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -326,8 +326,9 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
         maxLines: isMultiLine ? 3 : 1,
         style: textStyle.poppins500(width < 768 ? 15 : 16, black),
         validator: (value) {
-          if (value == null || value.trim().isEmpty) return 'Please enter $label';
-          if (label == 'Phone Number' && !RegExp(r'^[\+]?[0-9\s\-\(\)]{7,15}$').hasMatch(value)) return 'Invalid phone number';
+          if (required && (value == null || value.trim().isEmpty)) return 'Please enter $label';
+          if (label == 'Phone Number' && !RegExp(r'^[\+]?[0-9\s\-\(\)]{7,15}$').hasMatch(value ?? '')) return 'Invalid phone number';
+          if (label == 'Email Address' && value != null && value.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Invalid email address';
           return null;
         },
       ),
@@ -389,7 +390,7 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
                     const SizedBox(height: 16),
                     _buildFormTextField(_nameController, 'Name'),
                     _buildFormTextField(_descriptionController, 'Description', isMultiLine: true),
-                    _buildFormTextField(_addressController, 'Address'),
+                    _buildFormTextField(_emailController, 'Email Address (Optional)', keyboardType: TextInputType.emailAddress, required: false),
                     _buildFormTextField(_phoneController, 'Phone Number', keyboardType: TextInputType.phone),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -609,7 +610,7 @@ class _AdminPanelSinglePageState extends State<AdminPanelSinglePage> with Ticker
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  '${center.category} - ${center.address}',
+                                  '${center.category} - ${center.email.isNotEmpty ? center.email : 'No email'}',
                                   style: textStyle.poppins400(width < 768 ? 14 : 15, black.withOpacity(0.8)),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 2,
