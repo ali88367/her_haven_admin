@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         FlutterQuillLocalizations.delegate,
       ],
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: HomeMain(),
+      home: Login(),
     );
   }
 }
