@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:herhaven_admin/tabs/resources.dart';
 import 'package:herhaven_admin/sidebar/sidebar.dart';
 import 'package:herhaven_admin/sidebar/sidebar_controller.dart';
+import '../tabs/Reports.dart';
 import '../tabs/User_Details.dart';
 import '../tabs/add_help.dart';
+import '../tabs/privacy_policy.dart';
 import '../tabs/resourcesList.dart';
 
 
@@ -44,6 +46,10 @@ class _HomeMainState extends State<HomeMain> {
                         ? ResourcesList()
                         : sidebarController.selectedindex.value == 3
                         ? AdminPanelSinglePage()
+                        : sidebarController.selectedindex.value == 4
+                        ? AdminReportedPostsScreen()
+                        : sidebarController.selectedindex.value == 5
+                        ? UploadTermsPrivacyScreen()
                         : UserDetails()))
               ],
             ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:herhaven_admin/SideBar/home_main.dart';
 import 'Login.dart';
 import 'firebase_options.dart';
-import 'sidebar/home_main.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +16,6 @@ void main() async {
 }
 
 
-
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -25,8 +24,12 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Admin Panel',
+      localizationsDelegates: const [
+        // ... your other delegates
+        FlutterQuillLocalizations.delegate,
+      ],
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: Login(),
+      home: HomeMain(),
     );
   }
 }
