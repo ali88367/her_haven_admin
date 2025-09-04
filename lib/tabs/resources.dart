@@ -16,8 +16,10 @@ class Resources extends StatefulWidget {
 class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _customCategoryController = TextEditingController();
   Uint8List? _imageBytes;
   String? _fileName;
+  String? _selectedCategory;
   bool _isUploading = false;
   bool _isFirebaseInitialized = false;
   double? _uploadProgress;
@@ -25,6 +27,13 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   late AnimationController _cardAnimationController;
   late Animation<double> _cardScaleAnimation;
+
+  final List<String> _categories = [
+    'Domestic Abuse',
+    'Mental Health',
+    'Sexual Abuse',
+    'Custom'
+  ];
 
   @override
   void initState() {
@@ -82,7 +91,7 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
           setState(() {
             _imageBytes = result.files.single.bytes!;
             _fileName = result.files.single.name;
-            _cardAnimationController.forward(from: 0.0); // Restart card animation
+            _cardAnimationController.forward(from: 0.0);
           });
         }
       }
@@ -106,7 +115,7 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
     if (!_isFirebaseInitialized) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text('Firebase is not initialized'),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
@@ -121,11 +130,12 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
 
     if (_imageBytes == null ||
         _titleController.text.trim().isEmpty ||
-        _descriptionController.text.trim().isEmpty) {
+        _descriptionController.text.trim().isEmpty ||
+        (_selectedCategory == null || (_selectedCategory == 'Custom' && _customCategoryController.text.trim().isEmpty))) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-            content: Text('Please select an image and enter a title and description'),
+          SnackBar(
+            content: Text('Please select an image, enter a title, description, and category'),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -156,15 +166,14 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
         }
       });
 
-      // Timeout after 30 seconds for upload
       final snapshot = await uploadTask.timeout(const Duration(seconds: 30));
       final imageUrl = await snapshot.ref.getDownloadURL();
 
-      // Firestore write with timeout
       await FirebaseFirestore.instance.collection('resources').add({
         'imageUrl': imageUrl,
         'title': _titleController.text.trim(),
         'description': _descriptionController.text.trim(),
+        'category': _selectedCategory == 'Custom' ? _customCategoryController.text.trim() : _selectedCategory,
         'timestamp': FieldValue.serverTimestamp(),
       }).timeout(const Duration(seconds: 10));
 
@@ -174,6 +183,8 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
           _fileName = null;
           _titleController.clear();
           _descriptionController.clear();
+          _customCategoryController.clear();
+          _selectedCategory = null;
           _uploadProgress = null;
         });
 
@@ -222,8 +233,8 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              primaryColor, // Creamy background
-              purple.withOpacity(0.1), // Light purple tint
+              primaryColor,
+              purple.withOpacity(0.1),
             ],
           ),
         ),
@@ -238,7 +249,6 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -272,7 +282,6 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  // Upload Card
                   ScaleTransition(
                     scale: _cardScaleAnimation,
                     child: Material(
@@ -298,7 +307,6 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            // Image Upload
                             GestureDetector(
                               onTap: _pickImage,
                               child: AnimatedContainer(
@@ -352,7 +360,6 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            // Title Field
                             Row(
                               children: [
                                 Container(
@@ -392,7 +399,6 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            // Description Field
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -433,8 +439,106 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: pink.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.category_rounded,
+                                    color: pink,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    value: _selectedCategory,
+                                    decoration: InputDecoration(
+                                      labelText: 'Category',
+                                      labelStyle: TextStyle(color: pink),
+                                      filled: true,
+                                      fillColor: primaryColor.withOpacity(0.6),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide(color: pink, width: 2),
+                                      ),
+                                    ),
+                                    items: _categories.map((String category) {
+                                      return DropdownMenuItem<String>(
+                                        value: category,
+                                        child: Text(
+                                          category,
+                                          style: TextStyle(color: black, fontWeight: FontWeight.w500),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (String? newValue) {
+                                      setState(() {
+                                        _selectedCategory = newValue;
+                                        if (newValue != 'Custom') {
+                                          _customCategoryController.clear();
+                                        }
+                                      });
+                                    },
+                                    hint: Text(
+                                      'Select a category',
+                                      style: TextStyle(color: pink.withOpacity(0.6)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_selectedCategory == 'Custom') ...[
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: pink.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.edit_rounded,
+                                      color: pink,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _customCategoryController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Custom Category',
+                                        hintText: 'Enter custom category...',
+                                        labelStyle: TextStyle(color: pink),
+                                        filled: true,
+                                        fillColor: primaryColor.withOpacity(0.6),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: pink, width: 2),
+                                        ),
+                                      ),
+                                      style: TextStyle(color: black, fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                             const SizedBox(height: 24),
-                            // Upload Button or Progress
                             Center(
                               child: _isUploading
                                   ? Column(
@@ -510,6 +614,7 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
     _cardAnimationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
+    _customCategoryController.dispose();
     super.dispose();
   }
 }
