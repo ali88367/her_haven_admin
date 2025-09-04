@@ -84,7 +84,7 @@ class UploadTermsPrivacyScreen extends StatelessWidget {
                     tabs: const [
                       Tab(text: 'Terms & Conditions'),
                       Tab(text: 'Privacy Policy'),
-                    ],
+                                        ],
                   ),
                 ),
                 const SizedBox(height: 16.0),
