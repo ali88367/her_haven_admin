@@ -92,12 +92,21 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
     }
   }
 
-  Future<void> _showEditDialog(String docId, String currentTitle, String currentDescription, String currentImageUrl) async {
+  Future<void> _showEditDialog(String docId, String currentTitle, String currentDescription, String currentImageUrl, String category) async {
     final TextEditingController titleController = TextEditingController(text: currentTitle);
     final TextEditingController descriptionController = TextEditingController(text: currentDescription);
     Uint8List? newImageBytes;
     String? newFileName;
     double? uploadProgress;
+    final List<String> _categories = [
+      'Educational Guides',
+      'HerHaven News',
+      'Know Your Rights',
+      'Life After Abuse',
+      'Custom'
+    ];
+    // Validate the passed category; if invalid, default to the first category
+    String? selectedCategory = _categories.contains(category) ? category : _categories.first;
 
     await showDialog<void>(
       context: context,
@@ -272,6 +281,43 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
                           fontSize: width < 768 ? 15 : 16,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      // Category Dropdown
+                      DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        decoration: InputDecoration(
+                          labelText: 'Category',
+                          labelStyle: TextStyle(color: pink, fontSize: 14),
+                          filled: true,
+                          fillColor: primaryColor.withOpacity(0.5),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: pink, width: 1.5),
+                          ),
+                        ),
+                        items: _categories.map((String category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(
+                              category,
+                              style: TextStyle(
+                                color: black,
+                                fontWeight: FontWeight.w500,
+                                fontSize: width < 768 ? 15 : 16,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setDialogState(() {
+                            selectedCategory = newValue;
+                          });
+                        },
+                      ),
                       const SizedBox(height: 16),
                       // Upload Progress or Buttons
                       Center(
@@ -343,10 +389,11 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
                               ),
                               onPressed: () async {
                                 if (titleController.text.trim().isEmpty ||
-                                    descriptionController.text.trim().isEmpty) {
+                                    descriptionController.text.trim().isEmpty ||
+                                    selectedCategory == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                     SnackBar(
-                                      content: Text('Please enter a title and description'),
+                                    SnackBar(
+                                      content: Text('Please enter a title, description, and select a category'),
                                       backgroundColor: Colors.redAccent,
                                       behavior: SnackBarBehavior.floating,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -391,6 +438,7 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
                                     'title': titleController.text.trim(),
                                     'description': descriptionController.text.trim(),
                                     'imageUrl': newImageUrl,
+                                    'category': selectedCategory,
                                     'timestamp': FieldValue.serverTimestamp(),
                                   })
                                       .timeout(const Duration(seconds: 10));
@@ -398,7 +446,7 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
                                   if (mounted) {
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                       SnackBar(
+                                      SnackBar(
                                         content: Text('Resource updated successfully!'),
                                         backgroundColor: pink,
                                         behavior: SnackBarBehavior.floating,
@@ -444,7 +492,6 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
       },
     );
   }
-
   Future<void> _showDescriptionDialog(String title, String description) async {
     return showDialog<void>(
       context: context,
@@ -605,6 +652,7 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
                               final data = doc.data() as Map<String, dynamic>;
                               final title = data['title'] ?? 'Untitled';
                               final description = data['description'] ?? '';
+                              final category = data['category'] ?? '';
                               final imageUrl = data['imageUrl'] ?? '';
 
                               return ScaleTransition(
@@ -739,7 +787,7 @@ class _ResourcesListState extends State<ResourcesList> with TickerProviderStateM
                                                         color: blue,
                                                         size: 20,
                                                       ),
-                                                      onPressed: () => _showEditDialog(doc.id, title, description, imageUrl),
+                                                      onPressed: () => _showEditDialog(doc.id, title, description, imageUrl,category),
                                                       tooltip: 'Edit Resource',
                                                       padding: EdgeInsets.zero,
                                                       constraints: const BoxConstraints(),

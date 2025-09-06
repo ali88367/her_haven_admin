@@ -304,6 +304,29 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> with TickerProviderSt
                 ),
                 SidebarXItem(
                   onTap: () {
+                    sidebarController.selectedindex.value = 2;
+                  },
+                  iconBuilder: (selected, hovered) {
+                    return ScaleTransition(
+                      scale: _itemScaleAnimation,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: selected ? blue.withOpacity(0.2) : (hovered ? blue.withOpacity(0.1) : Colors.transparent),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.people_rounded,
+                          color: Colors.white,
+                          size: selected ? 26 : 24,
+                        ),
+                      ),
+                    );
+                  },
+                  label: 'User Posts',
+                ),
+                SidebarXItem(
+                  onTap: () {
                     sidebarController.selectedindex.value = 1;
                   },
                   iconBuilder: (selected, hovered) {
@@ -327,7 +350,7 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> with TickerProviderSt
                 ),
                 SidebarXItem(
                   onTap: () {
-                    sidebarController.selectedindex.value = 2;
+                    sidebarController.selectedindex.value = 3;
                   },
                   iconBuilder: (selected, hovered) {
                     return ScaleTransition(
@@ -350,7 +373,7 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> with TickerProviderSt
                 ),
                 SidebarXItem(
                   onTap: () {
-                    sidebarController.selectedindex.value = 3;
+                    sidebarController.selectedindex.value = 4;
                   },
                   iconBuilder: (selected, hovered) {
                     return ScaleTransition(
@@ -373,7 +396,7 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> with TickerProviderSt
                 ),
                 SidebarXItem(
                   onTap: () {
-                    sidebarController.selectedindex.value = 4;
+                    sidebarController.selectedindex.value = 5;
                   },
                   iconBuilder: (selected, hovered) {
                     return ScaleTransition(
@@ -396,7 +419,7 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> with TickerProviderSt
                 ),
                 SidebarXItem(
                   onTap: () {
-                    sidebarController.selectedindex.value = 5;
+                    sidebarController.selectedindex.value = 6;
                   },
                   iconBuilder: (selected, hovered) {
                     return ScaleTransition(

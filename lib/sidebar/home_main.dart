@@ -8,6 +8,7 @@ import '../tabs/User_Details.dart';
 import '../tabs/add_help.dart';
 import '../tabs/privacy_policy.dart';
 import '../tabs/resourcesList.dart';
+import 'AllPosts.dart';
 
 
 class HomeMain extends StatefulWidget {
@@ -43,13 +44,16 @@ class _HomeMainState extends State<HomeMain> {
                         : sidebarController.selectedindex.value == 1
                         ? Resources()
                         : sidebarController.selectedindex.value == 2
-                        ? ResourcesList()
+                        ? AllPosts()
                         : sidebarController.selectedindex.value == 3
-                        ? AdminPanelSinglePage()
+                        ? ResourcesList()
                         : sidebarController.selectedindex.value == 4
-                        ? AdminReportedPostsScreen()
+                        ? AdminPanelSinglePage()
                         : sidebarController.selectedindex.value == 5
+                        ? AdminReportedPostsScreen()
+                        : sidebarController.selectedindex.value == 6
                         ? UploadTermsPrivacyScreen()
+
                         : UserDetails()))
               ],
             ),

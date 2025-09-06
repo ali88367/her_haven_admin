@@ -29,10 +29,10 @@ class _ResourcesState extends State<Resources> with TickerProviderStateMixin {
   late Animation<double> _cardScaleAnimation;
 
   final List<String> _categories = [
-    'Domestic Abuse',
-    'Mental Health',
-    'Sexual Abuse',
-    'Custom'
+    'Educational Guides',
+    'HerHaven News',
+    'Know Your Rights',
+    'Life After Abuse',
   ];
 
   @override
